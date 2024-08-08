@@ -24,3 +24,10 @@ app.listen(PORT,() => {
 
 make mongodb user and clustor by creating new project 
 pass hnPtfBn9087cfKYm
+
+now i create a models folder for creating the all models
+creater user model/schema in user.model.js
+create post model/schema
+-------message
+-------conversation
+-------commment
