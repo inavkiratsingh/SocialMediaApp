@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
+import { Post } from "../models/post.model.js";
+import nodemon from "nodemon";
 
 export const register = async (req,res) => {
     try {
@@ -35,7 +37,7 @@ export const register = async (req,res) => {
 
         return res.status(201).json({
             message: "Account created successfully.",
-            success: false
+            success: true
         });
 
     } catch (error) {
@@ -72,6 +74,19 @@ export const login = async(req, res) => {
             });
         }
 
+        const token = jwt.sign({userId: user._id}, process.env.SECRET_KEY, {expiresIn: '2d'});
+
+
+        const populatedPosts = await Promise.all(
+            user.post.map(async (postId) => {
+                const post = await post.findById(postId);
+                if(post.author.equals(user._id)){
+                    return post;
+                } else {
+                    return null;
+                }
+            })
+        )
         
         user = {
             _id: user._id,
@@ -81,11 +96,9 @@ export const login = async(req, res) => {
             bio: user.bio,
             followers: user.followers,
             following: user.following,
-            posts: user.posts
+            posts: populatedPosts
         }
         
-        const token = jwt.sign({userId: user._id}, process.env.SECRET_KEY, {expiresIn: '2d'});
-
 
         return res.cookie('token',token,{httpOnly: true, sameSite: 'strict', maxAge: 2*24*60*60*1000}).json({
             message: `Welcome ${user.username}`,

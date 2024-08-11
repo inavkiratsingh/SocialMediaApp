@@ -1,7 +1,8 @@
 import sharp from "sharp"
-import cloudinary from "../utils/cloudinary";
+import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js"
 import { User } from "../models/user.model.js";
+import { comment } from "../models/comment.model.js";
 
 export const addNewPost = async (req, res) => {
     try {
@@ -166,7 +167,7 @@ export const addComment = async (req,res) => {
         const post = await Post.findById(postId);
         if(!text) return res.status(400).json({success: false, message: 'text is requires'});
 
-        const comment = await Comment.create({
+        const comment = await comment.create({
             text,
             author: CommentKarneWaleUserKiId,
             post: postId
@@ -195,7 +196,7 @@ export const addComment = async (req,res) => {
 export const getCommentOfPost = async (req,res) => {
     try {
         const postId = req.params.id;
-        const comments = await Comment.find({post: postId}).populate('author', 'username');
+        const comments = await comment.find({post: postId}).populate('author', 'username');
 
         if(!comments) return res.status(404).json({message: 'No comments found for this post', success: false});
 
