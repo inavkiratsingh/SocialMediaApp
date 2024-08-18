@@ -1,4 +1,5 @@
 import './App.css'
+import ChatPage from './components/ChatPage'
 import Home from './components/Home'
 import Login from './components/Login'
 import MainLayout from './components/MainLayout'
@@ -13,6 +14,10 @@ const browserRouter = createBrowserRouter([
       {
         path: '/',
         element: <Home />
+      },
+      {
+        path: '/chat',
+        element: <ChatPage />
       }
     ]
   },

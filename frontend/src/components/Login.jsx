@@ -4,14 +4,19 @@ import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
 import axios from 'axios'
+import { Link, useNavigate } from 'react-router-dom'
+import { Loader2 } from 'lucide-react'
+import { useDispatch } from 'react-redux'
+import { setAuthUser } from '@/redux/authSlice'
 
 const Login = () => {
 
     const [input, setInput] = useState({
         email: "",
         password: ""
-    })
-
+    });
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [loading, setloading] = useState(false)
 
     const changeEventHandler = (e) => {
@@ -38,6 +43,8 @@ const Login = () => {
             
 
             if(response.data.success){
+                dispatch(setAuthUser(res.data.user))
+                navigate('/')
                 toast.success(response.data.message);
                 setInput({
                     email: "",
@@ -84,12 +91,26 @@ const Login = () => {
                         className="my-2 focus-visible:ring-offset-transparent bg-zinc-800 border-zinc-800"
                     />
                 </div>
-                <Button 
-                className='bg-zinc-100 text-zinc-900'
-                type='submit'
-                >
-                    Login
-                </Button>
+
+                {
+                    loading ? 
+                    (
+                        <Button>
+                            <Loader2 className='animate-spin mr-2 h-4 w-4' />
+                            Please wait
+                        </Button>
+                    ) :
+                    (
+                        <Button 
+                        className='bg-zinc-100 text-zinc-900 hover:bg-zinc-100'
+                        type='submit'
+                        >
+                            Login
+                        </Button>
+                    )
+                }
+
+                
                 <span className='text-center'>
                     Don't have an account? <Link to="/signup" className='text-blue-600'>Signup</Link>
                 </span>

@@ -1,8 +1,15 @@
 import React from 'react'
+import { Outlet } from 'react-router-dom'
+import LeftSidebar from './LeftSidebar'
 
 function MainLayout() {
   return (
-    <div>MainLayout</div>
+    <div>
+      <LeftSidebar />
+      <div>
+        <Outlet/>
+      </div>
+    </div>
   )
 }
 

@@ -4,7 +4,7 @@ import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
 import axios from 'axios'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const Signup = () => {
 
@@ -12,7 +12,9 @@ const Signup = () => {
         username: "",
         email: "",
         password: ""
-    })
+    });
+
+    const navigate = useNavigate();
 
     const [loading, setloading] = useState(false)
 
@@ -40,6 +42,7 @@ const Signup = () => {
             
 
             if(response.data.success){
+                navigate('/login')
                 toast.success(response.data.message);
                 setInput({
                     username: "",
@@ -97,12 +100,25 @@ const Signup = () => {
                         className="my-2 focus-visible:ring-offset-transparent bg-zinc-800 border-zinc-800"
                     />
                 </div>
-                <Button 
-                className='bg-zinc-100 text-zinc-900'
-                type='submit'
-                >
-                    Signup
-                </Button>
+
+                {
+                    loading ? 
+                    (
+                        <Button>
+                            <Loader2 className='animate-spin mr-2 h-4 w-4' />
+                            Please wait
+                        </Button>
+                    ) :
+                    (
+                        <Button 
+                        className='bg-zinc-100 text-zinc-900 hover:bg-zinc-100'
+                        type='submit'
+                        >
+                            Signup
+                        </Button>
+                    )
+                }
+
                 <span className='text-center'>
                     Already have an account? <Link to="/login" className='text-blue-600'>login</Link>
                 </span>
