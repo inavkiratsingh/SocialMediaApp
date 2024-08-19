@@ -2,7 +2,8 @@ import sharp from "sharp"
 import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js"
 import { User } from "../models/user.model.js";
-import { comment } from "../models/comment.model.js";
+import { Comment } from "../models/comment.model.js";
+import { getRecieverSocketId } from "../socket/socket.js";
 
 export const addNewPost = async (req, res) => {
     try {
@@ -55,23 +56,23 @@ export const addNewPost = async (req, res) => {
 
 export const getAllPost = async(req, res) => {
     try {
-        const post = await Post.find().sort({ createAt: -1})
+        const posts = await Post.find().sort({ createdAt: -1})
         .populate({
             path: 'author', 
-            select: 'username, profilePicture'
+            select: 'username profilePicture'
         })
         .populate({
-            path:comments, 
+            path:'comments', 
             sort:{createdAt: -1},
             populate:{
-                path:'author',
-                select: 'username, profilePicture'
+                path: 'author',
+                select: 'username profilePicture'
             }
         });
 
-        return res.send(200).json({
+        return res.status(200).json({
             success: true,
-            post
+            posts
         })
     } catch (error) {
         console.log(error);        
@@ -121,6 +122,19 @@ export const likePost = async(req, res)=>{
         await post.save();
 
         //TODO: socket io 
+        const user = await User.findById(likeKrneWalaUserKiId).select('username profilePicture');
+        const postOwnerId = post.author.toString();
+        if(postOwnerId !== likeKrneWalaUserKiId){
+            const notification = {
+                type: 'like',
+                userId: likeKrneWalaUserKiId,
+                userDetails: user,
+                postId,
+                message: 'Your post was liked'
+            }
+            const postOwnerSocketId = getRecieverSocketId(postOwnerId);
+            io.to(postOwnerSocketId).emit('notification', notification);
+        }
 
         return res.status(200).json({
             success:true,
@@ -146,6 +160,19 @@ export const disLikePost = async(req, res)=>{
         await post.save();
 
         //TODO: socket io 
+        const user = await User.findById(likeKrneWalaUserKiId).select('username profilePicture');
+        const postOwnerId = post.author.toString();
+        if(postOwnerId !== likeKrneWalaUserKiId){
+            const notification = {
+                type: 'dislike',
+                userId: likeKrneWalaUserKiId,
+                userDetails: user,
+                postId,
+                message: 'Your post was disliked'
+            }
+            const postOwnerSocketId = getRecieverSocketId(postOwnerId);
+            io.to(postOwnerSocketId).emit('notification', notification);
+        }
 
         return res.status(200).json({
             success:true,
@@ -167,14 +194,14 @@ export const addComment = async (req,res) => {
         const post = await Post.findById(postId);
         if(!text) return res.status(400).json({success: false, message: 'text is requires'});
 
-        const comment = await comment.create({
+        const comment = await Comment.create({
             text,
             author: CommentKarneWaleUserKiId,
             post: postId
         })
-        .populate({
+        await comment.populate({
             path: 'author',
-            select: 'username, profilePicture'
+            select: 'username profilePicture'
         });
 
         post.comments.push(comment._id);
@@ -219,15 +246,15 @@ export const deletePost = async (req,res) => {
         if(post.author.toString() !== authorId) return res.status(403).json({message: 'Unauthorized'});
 
         // delete post
-        await post.findByIdAndDelete(postId);
+        await Post.findByIdAndDelete(postId);
 
         // reove the post id from user post
         let user = await User.findById(authorId);
-        user.post = user.post.fiter(id => id.toString!== postId);
+        user.post = user.post.filter(id => id.toString() !== postId);
         await user.save();
 
         // delete associated comments
-        await Comment.deleteMany({post: postId});
+        await comment.deleteMany({post: postId});
 
         return res.status(200).json({
             success: true,

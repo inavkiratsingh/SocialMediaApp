@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { useDispatch } from 'react-redux'
 import { setAuthUser } from '@/redux/authSlice'
+import { setPosts } from '@/redux/postSlice'
 
 const Login = () => {
 
@@ -20,6 +21,7 @@ const Login = () => {
     const [loading, setloading] = useState(false)
 
     const changeEventHandler = (e) => {
+        
         setInput({...input, [e.target.name]: e.target.value});
     }
 
@@ -43,7 +45,7 @@ const Login = () => {
             
 
             if(response.data.success){
-                dispatch(setAuthUser(res.data.user))
+                dispatch(setAuthUser(response.data.user))
                 navigate('/')
                 toast.success(response.data.message);
                 setInput({
