@@ -32,7 +32,7 @@ const Login = () => {
             
             
             const response = await axios.post(
-                'http://localhost:8000/api/v1/user/login', 
+                'https://socialmediaapp-1f6a.onrender.com//api/v1/user/login', 
                 input, 
                 {
                     headers: {
